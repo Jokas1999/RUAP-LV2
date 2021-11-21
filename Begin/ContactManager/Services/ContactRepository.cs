@@ -4,25 +4,53 @@ using System.Linq;
 using System.Web;
 using ContactManager.Models;
 
+
 namespace ContactManager.Services
 {
     public class ContactRepository
     {
-        public Contact[] GetAllContacts()
+        public ContactRepository()
         {
-            return new Contact[]
+            var ctx = HttpContext.Current;
+
+            if (ctx != null)
             {
+                if (ctx.Cache[CacheKey] == null)
+                {
+                    var contacts = new Contact[]
+                    {
                 new Contact
                 {
-                    Id = 1,
-                    Name = "Glenn Block"
+                    Id = 1, Name = "Glenn Block"
                 },
                 new Contact
                 {
-                    Id = 2,
-                    Name = "Dan Roth"
+                    Id = 2, Name = "Dan Roth"
                 }
-            };
+                    };
+
+                    ctx.Cache[CacheKey] = contacts;
+                }
+            }
+        }
+        private const string CacheKey = "ContactStore";
+        public Contact[] GetAllContacts()
+        {
+            var ctx = HttpContext.Current;
+
+            if (ctx != null)
+            {
+                return (Contact[])ctx.Cache[CacheKey];
+            }
+
+            return new Contact[]
+                {
+            new Contact
+            {
+                Id = 0,
+                Name = "Placeholder"
+            }
+                };
         }
     }
 }
