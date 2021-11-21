@@ -9,6 +9,7 @@ namespace ContactManager.Services
 {
     public class ContactRepository
     {
+        private const string CacheKey = "ContactStore";
         public ContactRepository()
         {
             var ctx = HttpContext.Current;
@@ -19,21 +20,21 @@ namespace ContactManager.Services
                 {
                     var contacts = new Contact[]
                     {
-                new Contact
-                {
-                    Id = 1, Name = "Glenn Block"
-                },
-                new Contact
-                {
-                    Id = 2, Name = "Dan Roth"
-                }
+                        new Contact
+                        {
+                            Id = 1, Name = "Glenn Block"
+                        },
+                        new Contact
+                        {
+                            Id = 2, Name = "Dan Roth"
+                        }
                     };
 
                     ctx.Cache[CacheKey] = contacts;
                 }
             }
         }
-        private const string CacheKey = "ContactStore";
+        
         public Contact[] GetAllContacts()
         {
             var ctx = HttpContext.Current;
@@ -45,12 +46,35 @@ namespace ContactManager.Services
 
             return new Contact[]
                 {
-            new Contact
-            {
-                Id = 0,
-                Name = "Placeholder"
-            }
+                    new Contact
+                    {
+                        Id = 0,
+                        Name = "Placeholder"
+                    }
                 };
+        }
+        public bool SaveContact(Contact contact)
+        {
+            var ctx = HttpContext.Current;
+
+            if (ctx != null)
+            {
+                try
+                {
+                    var currentData = ((Contact[])ctx.Cache[CacheKey]).ToList();
+                    currentData.Add(contact);
+                    ctx.Cache[CacheKey] = currentData.ToArray();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
+            }
+
+            return false;
         }
     }
 }
